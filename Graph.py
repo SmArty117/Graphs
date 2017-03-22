@@ -30,7 +30,7 @@ class Graph:
         if extension in ['txt', 'in']:
             self.__read_from_file(source)
         elif extension == 'csv':
-            self.__read_csv()
+            raise NotImplementedError('CSV reading not yet implemented.')
         else:
             raise CorruptedInputException('Unrecognised file format!')
 
@@ -76,7 +76,7 @@ class Graph:
             else:
                 cost = 1
 
-            self.edges.append((source_node, dest_node, cost))
+            self.edges.append(((source_node, dest_node), cost))
             source_node.neighbours.append((dest_node, cost))
             if not self.directed:
                 dest_node.neighbours.append((source_node, cost))
@@ -101,14 +101,14 @@ class Graph:
         if not self.weighted:
             cost = 1
 
-        self.edges.append((u, v, cost))
+        self.edges.append(((u, v), cost))
         u.neighbours.append((v, cost))
         if not self.directed:
             v.neighbours.append((u, cost))
 
     def __str__(self):
         adj = [[0 for x in range(self.numOfNodes)] for y in range(self.numOfNodes)]
-        for (u, v, c) in self.edges:
+        for ((u, v), c) in self.edges:
             adj[u.id][v.id] = c
             if not self.directed:
                 adj[v.id][u.id] = c

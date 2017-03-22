@@ -77,6 +77,10 @@ class Heap:
 
 
 def heapsort(arr, key=lambda arg: arg):
+    """Returns an iterator through the sorted elements of arr
+        Sorting occurs by the natural order of key(arr[i])
+        Not guaranteed to be stable!
+    """
     h = Heap(arr, key=key)
     while not h.emtpy():
         yield h.extract_min()

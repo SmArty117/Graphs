@@ -43,7 +43,7 @@ def bfs(g, s):
 def dijkstra(g, s):
     """
     Find the shortest paths from a given source on a graph
-    Note that the graph having negative-weight cycles will cause
+    The graph having negative-weight cycles will cause
     the algorithm to raise IncompatibleInputException
     :param g: the graph
     :param s: the source node (the actual object, not the id)
@@ -58,13 +58,13 @@ def dijkstra(g, s):
 
     d[s.id] = 0
     prev[s.id] = s
-    q.put((d[s.id], s))
+    q.put((s, d[s.id]))
 
     while not q.empty():
-        u = q.get()
+        u, du = q.get()
         popped[u.id] = True
         for (v, c) in u.neighbours:
-            newd = d[u.id] + c
+            newd = du + c
             if newd < d[v.id]:
                 if popped[v.id]:
                     raise IncompatibleInputException('A negative weight cycle was found!')

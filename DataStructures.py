@@ -7,9 +7,9 @@ class Heap:
         i.e. one for which key(el) is the smallest
     """
 
-    def __init__(self, *args, key=lambda arg: arg):
+    def __init__(self, arr, key=lambda arg: arg):
         self.__arr = []
-        self.__arr.extend(args)
+        self.__arr.extend(arr)
         self.key = key
         Heap.heapify(self.__arr, key=self.key)
 
@@ -19,6 +19,7 @@ class Heap:
     def extract_min(self):
         toreturn = self.__arr[0]
         self.__arr[0], self.__arr[-1] = self.__arr[-1], self.__arr[0]
+        self.__arr = self.__arr[:-1]
         Heap.__sift(0, self.__arr, key=self.key)
         return toreturn
 
@@ -34,13 +35,16 @@ class Heap:
             a[i], a[Heap.parent(i)] = a[Heap.parent(i)], a[i]
             i = Heap.parent(i)
 
-    def add_all(self, smth):
-        if len(smth) > len(self.__arr) / math.log2(len(self.__arr)):
-            self.__arr.extend(smth)
+    def add_all(self, iterable):
+        if len(iterable) > len(self.__arr) / math.log2(len(self.__arr)):
+            self.__arr.extend(iterable)
             Heap.heapify(self.__arr, key=self.key)
         else:
-            for x in smth:
+            for x in iterable:
                 self.add(x)
+
+    def emtpy(self):
+        return len(self.__arr) == 0
 
     @staticmethod
     def heapify(arr, key=lambda arg: arg):
@@ -70,3 +74,9 @@ class Heap:
     @staticmethod
     def children(n, l):
         return (x for x in (2*n+1, 2*n+2) if x < l)
+
+
+def heapsort(arr, key=lambda arg: arg):
+    h = Heap(arr, key=key)
+    while not h.emtpy():
+        yield h.extract_min()

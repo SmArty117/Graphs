@@ -84,3 +84,12 @@ def heapsort(arr, key=lambda arg: arg):
     h = Heap(arr, key=key)
     while not h.emtpy():
         yield h.extract_min()
+
+
+class PriorityQueue(Heap):
+    def __init__(self, arr):
+        Heap.__init__(self, arr, key=lambda arg: arg[0])
+
+    def decrease_key(self, item, new_key):
+        pass
+        # TODO: gotta think, maybe add more functionality to Heap?

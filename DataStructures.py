@@ -20,7 +20,7 @@ class Heap:
         toreturn = self.__arr[0]
         self.__arr[0], self.__arr[-1] = self.__arr[-1], self.__arr[0]
         self.__arr = self.__arr[:-1]
-        Heap.__sift(0, self.__arr, key=self.key)
+        Heap._sift(0, self.__arr, key=self.key)
         return toreturn
 
     def add(self, x):
@@ -34,6 +34,7 @@ class Heap:
         while Heap.parent(i) >= 0 and k(i) < k(Heap.parent(i)):
             a[i], a[Heap.parent(i)] = a[Heap.parent(i)], a[i]
             i = Heap.parent(i)
+        return i
 
     def add_all(self, iterable):
         if len(iterable) > len(self.__arr) / math.log2(len(self.__arr)):
@@ -52,17 +53,18 @@ class Heap:
         # find the parent of the last node, i.e. the last parent:
         start_index = Heap.parent(len(arr)-1)
         for n in range(start_index, -1, -1):
-            Heap.__sift(n, arr, key=key)
+            Heap._sift(n, arr, key=key)
         return arr
 
     @staticmethod
-    def __sift(n, arr, key=lambda arg: arg):
+    def _sift(n, arr, key=lambda arg: arg):
         def intkey(i):
             return key(arr[i])
         while tuple(x for x in Heap.children(n, len(arr)) if intkey(n) > intkey(x)):
             min_child = min(list(Heap.children(n, len(arr))), key=intkey)
             arr[n], arr[min_child] = arr[min_child], arr[n]
             n = min_child
+        return n
 
     @staticmethod
     def parent(n):
@@ -87,9 +89,24 @@ def heapsort(arr, key=lambda arg: arg):
 
 
 class PriorityQueue(Heap):
-    def __init__(self, arr):
-        Heap.__init__(self, arr, key=lambda arg: arg[0])
+    """A queue in which items are sorted by priority.
+        Uses an underlying heap representation.
+    """
+
+    def __init__(self, arr, key=lambda arg: arg):
+        # insert values into the queue, but insert (key(v), v) into the heap
+        Heap.__init__(self,
+                      [(key(v), v) for v in arr],
+                      key=lambda arg: arg[0])
+        self.__arr = self._Heap__arr    # just a shorthand
+        self._index = {c[1]: i for i, c in enumerate(self.__arr)}
+
+    def push(self, x, *args):
+        # if there is a priority specified, use that
+        # if not, use the key(x) ?? is this a good idea?
+        self._index[x] = Heap.add(self, (self.key(x), x))
 
     def decrease_key(self, item, new_key):
-        pass
-        # TODO: gotta think, maybe add more functionality to Heap?
+        del self.__arr[self._index[item]]
+        del self._index[item]
+        self.add((new_key, item))

@@ -17,6 +17,8 @@ class Heap:
         return self.__arr[0]
 
     def extract_min(self):
+        """Extract the root of the heap and return it"""
+
         toreturn = self.__arr[0]
         self.__arr[0], self.__arr[-1] = self.__arr[-1], self.__arr[0]
         self.__arr = self.__arr[:-1]
@@ -24,17 +26,11 @@ class Heap:
         return toreturn
 
     def add(self, x):
+        """Add an element to the heap
+            Returns the final index of the element if successful
+        """
         self.__arr.append(x)
-        a = self.__arr
-
-        def k(ind):
-            return self.key(a[ind])
-
-        i = len(a) - 1
-        while Heap.parent(i) >= 0 and k(i) < k(Heap.parent(i)):
-            a[i], a[Heap.parent(i)] = a[Heap.parent(i)], a[i]
-            i = Heap.parent(i)
-        return i
+        return Heap._move_up(len(self.__arr)-1, self.__arr, key=self.key)
 
     def add_all(self, iterable):
         if len(iterable) > len(self.__arr) / math.log2(len(self.__arr)):
@@ -44,11 +40,28 @@ class Heap:
             for x in iterable:
                 self.add(x)
 
-    def emtpy(self):
-        return len(self.__arr) == 0
+    def __bool__(self):
+        return bool(self.__arr)
+
+    def updated(self, i):
+        """
+        A function that moves an updated element up or down the heap,
+        as appropriate, to satisfy the heap property.
+        :param i: The index of the updated element
+        :return: The new index of the element, if successful
+        """
+        def intkey(ind):
+            return self.key(self.__arr[ind])
+
+        if intkey(i) < intkey(Heap.parent(i)):
+            return Heap._move_up(i, self.__arr, key=self.key)
+        elif [c for c in Heap.children(i, len(self.__arr)) if intkey(c) < intkey(i)]:
+            return Heap._sift(i, self.__arr, key=self.key)
 
     @staticmethod
     def heapify(arr, key=lambda arg: arg):
+        """Modifies the array in place, making it satisfy the heap property"""
+
         # nr_levels = math.ceil(math.log2(len(arr)+1))
         # find the parent of the last node, i.e. the last parent:
         start_index = Heap.parent(len(arr)-1)
@@ -64,6 +77,15 @@ class Heap:
             min_child = min(list(Heap.children(n, len(arr))), key=intkey)
             arr[n], arr[min_child] = arr[min_child], arr[n]
             n = min_child
+        return n
+    
+    @staticmethod
+    def _move_up(n, arr, key=lambda arg: arg):
+        def intkey(i):
+            return key(arr[i])
+        while Heap.parent(n) >= 0 and intkey(n) < intkey(Heap.parent(n)):
+            arr[n], arr[Heap.parent(n)] = arr[Heap.parent(n)], arr[n]
+            n = Heap.parent(n)
         return n
 
     @staticmethod
@@ -84,29 +106,34 @@ def heapsort(arr, key=lambda arg: arg):
         Not guaranteed to be stable!
     """
     h = Heap(arr, key=key)
-    while not h.emtpy():
+    while h:
         yield h.extract_min()
 
 
-class PriorityQueue(Heap):
+class PriorityQueue:
     """A queue in which items are sorted by priority.
         Uses an underlying heap representation.
     """
 
     def __init__(self, arr, key=lambda arg: arg):
-        # insert values into the queue, but insert (key(v), v) into the heap
-        Heap.__init__(self,
-                      [(key(v), v) for v in arr],
-                      key=lambda arg: arg[0])
-        self.__arr = self._Heap__arr    # just a shorthand
-        self._index = {c[1]: i for i, c in enumerate(self.__arr)}
+        Heap.heapify(arr, key=key)
+        self.__heap = Heap(arr, key=key)
+        self._index = {c: i for (i, c) in enumerate(arr)}
 
-    def push(self, x, *args):
-        # if there is a priority specified, use that
-        # if not, use the key(x) ?? is this a good idea?
-        self._index[x] = Heap.add(self, (self.key(x), x))
+    def get_min(self):
+        return self.__heap.get_min()
 
-    def decrease_key(self, item, new_key):
-        del self.__arr[self._index[item]]
+    def pop(self):
+        item = self.__heap.extract_min()
         del self._index[item]
-        self.add((new_key, item))
+        return item
+
+    def push(self, x):
+        self._index[x] = self.__heap.add(x)
+
+    def push_all(self, xs):
+        for x in xs:
+            self.push(x)
+
+    def decrease_key(self, x):
+        self._index[x] = self.__heap.updated(self._index[x])

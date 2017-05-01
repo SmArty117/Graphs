@@ -33,7 +33,7 @@ class Heap:
         return Heap._move_up(len(self.__arr)-1, self.__arr, key=self.key)
 
     def add_all(self, iterable):
-        if len(iterable) > len(self.__arr) / math.log2(len(self.__arr)):
+        if len(iterable) > int(len(self.__arr) * (math.exp(len(self.__arr) - len(self.__arr)))):
             self.__arr.extend(iterable)
             Heap.heapify(self.__arr, key=self.key)
         else:
@@ -43,16 +43,20 @@ class Heap:
     def __bool__(self):
         return bool(self.__arr)
 
-    def updated(self, i):
+    def __contains__(self, item):
+        return item in self.__arr
+
+    def updated(self, item):
         """
         A function that moves an updated element up or down the heap,
         as appropriate, to satisfy the heap property.
-        :param i: The index of the updated element
+        :param item: The updated object
         :return: The new index of the element, if successful
         """
         def intkey(ind):
             return self.key(self.__arr[ind])
 
+        i = self.__arr.index(item)
         if intkey(i) < intkey(Heap.parent(i)):
             return Heap._move_up(i, self.__arr, key=self.key)
         elif [c for c in Heap.children(i, len(self.__arr)) if intkey(c) < intkey(i)]:
@@ -116,24 +120,25 @@ class PriorityQueue:
     """
 
     def __init__(self, arr, key=lambda arg: arg):
-        Heap.heapify(arr, key=key)
         self.__heap = Heap(arr, key=key)
-        self._index = {c: i for (i, c) in enumerate(arr)}
 
     def get_min(self):
         return self.__heap.get_min()
 
     def pop(self):
-        item = self.__heap.extract_min()
-        del self._index[item]
-        return item
+        return self.__heap.extract_min()
 
     def push(self, x):
-        self._index[x] = self.__heap.add(x)
+        self.__heap.add(x)
 
     def push_all(self, xs):
-        for x in xs:
-            self.push(x)
+        self.__heap.add_all(xs)
 
-    def decrease_key(self, x):
-        self._index[x] = self.__heap.updated(self._index[x])
+    def updated_key(self, item):
+        self.__heap.updated(item)
+
+    def __contains__(self, item):
+        return item in self.__heap
+
+    def __bool__(self):
+        return bool(self.__heap)

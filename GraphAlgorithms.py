@@ -1,6 +1,7 @@
 import queue
 import math
 import warnings
+import DataStructures
 
 # TODO: conclusion is this first needs implementing data structures
 #       such as priority queues, disjoint sets, etc.
@@ -18,26 +19,27 @@ def bfs(g, s):
     Run breadth-first search on a graph, ignoring edge weights (i.e. cost=1)
     :param g: the graph
     :param s: the source node (the actual object, not the id)
-    :return: a tuple of two lists: the first is the number of edges to each node
+    :return: a list of 2-tuples: the first element is the number of edges to each node
              and the second is the previous node in the shortest path found
     """
 
     q = queue.Queue()
-    d = [math.inf for i in range(g.numOfNodes)]
-    prev = [None for i in range(g.numOfNodes)]
-    d[s.id] = 0
-    prev[s.id] = s
+    for v in g.nodes:
+        v.d = math.inf
+        v.prev = None
+
+    s.d = 0
     q.put(s)
 
     while not q.empty():
         u = q.get()
         for (v, c) in u.neighbours:
-            if d[v.id] == math.inf:
-                d[v.id] = d[u.id] + 1
-                prev[v.id] = u
+            if v.d == math.inf:
+                v.d = u.d + 1
+                v.prev = u
                 q.put(v)
 
-    return d, prev
+    return list([(v.d, v.prev) for v in g.nodes])
 
 
 def dijkstra(g, s):
@@ -47,34 +49,36 @@ def dijkstra(g, s):
     the algorithm to raise IncompatibleInputException
     :param g: the graph
     :param s: the source node (the actual object, not the id)
-    :return: a tuple of two lists: the first is the distance to each node
+    :return: a list of 2-tuples: the first is the distance to each node
              and the second is the previous node in the shortest path found
     """
-    q = queue.PriorityQueue()
+    q = DataStructures.PriorityQueue([], key=lambda x: x.d)
 
-    d = [math.inf for i in range(g.numOfNodes)]
-    prev = [None for i in range(g.numOfNodes)]
-    popped = [False for i in range(g.numOfNodes)]
+    for v in g.nodes:
+        v.d = math.inf
+        v.prev = None
+        v.popped = False
 
-    d[s.id] = 0
-    prev[s.id] = s
-    q.put((s, d[s.id]))
+    s.d = 0
+    q.push(s)
 
-    while not q.empty():
-        u, du = q.get()
-        popped[u.id] = True
+    while q:
+        u = q.pop()
+        u.popped = True
         for (v, c) in u.neighbours:
-            newd = du + c
-            if newd < d[v.id]:
-                if popped[v.id]:
+            newd = u.d + c
+            if newd < v.d:
+                if v.popped:
                     raise IncompatibleInputException('A negative weight cycle was found!')
                 else:
-                    pass
-                # TODO: Priority queue properly done?
-                # if v is in q decrease the key
-                # if not, put v in the queue
+                    v.d = newd
+                    v.prev = u
+                    if v in q:
+                        q.updated_key(v)
+                    else:
+                        q.push(v)
 
-    return d, prev
+    return list([(v.d, v.prev) for v in g.nodes])
 
 
 def kruskal(g):

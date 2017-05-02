@@ -3,10 +3,6 @@ import math
 import warnings
 import DataStructures
 
-# TODO: conclusion is this first needs implementing data structures
-#       such as priority queues, disjoint sets, etc.
-#       will do that first
-
 
 class IncompatibleInputException(Exception):
     """An exception raised when a graph which does not meet the
@@ -92,12 +88,12 @@ def kruskal(g):
         warnings.warn('The graph should be undirected!')
 
     sol = []
-    es = sorted(g.edges, key=lambda e: e[2])    # sort edges by cost
-    # declare a partition of the graph
+    es = sorted(g.edges, key=lambda e: e[1])    # sort edges by cost
+    part = DataStructures.DisjointSet(g.nodes)
 
-    for edge in es:
-        pass
-        # if edge connects nodes in different components,
-        # add to sol, unify components
+    for ((u, v), c) in es:
+        if not part.same_set(u, v):
+            sol.append((u, v, c))
+            part.merge(u, v)
 
     return sol

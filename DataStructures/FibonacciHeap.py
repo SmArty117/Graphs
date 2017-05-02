@@ -13,5 +13,5 @@ class FibonacciHeapNode:
 class FibonacciHeap:
     """A type of priority queue that is lazy"""
 
-    def __init__(self, arr, key=lambda arg: arg):
-        pass
+    def __init__(self, iterable, key=lambda arg: arg):
+        raise NotImplementedError('FibHeap not implemented')

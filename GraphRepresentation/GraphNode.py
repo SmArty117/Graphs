@@ -16,10 +16,10 @@ class GraphNode:
         return '<Node ' + str(self.id) + '/>'
 
     def __repr__(self):
-        res = '<Node id="' + str(self.id)
+        res = '<Node ' + str(self.id)
         if self.content is not None:
-            res += '", content="' + str(self.content)
-        res += '">'
+            res += ': ' + str(self.content)
+        res += '/>'
         return res
 
     #

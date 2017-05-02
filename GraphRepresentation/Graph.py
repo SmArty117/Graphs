@@ -1,6 +1,4 @@
-import csv
-
-from GraphNode import GraphNode
+from GraphRepresentation.GraphNode import GraphNode
 
 
 class CorruptedInputException(Exception):
@@ -10,7 +8,7 @@ class CorruptedInputException(Exception):
 class Graph:
     """The base class to hold a graph.
         The graph is represented by a list of GraphNode objects and a list of edges.
-        The edges are tuples of type (source, destination, cost)
+        The edges are tuples of type ((source, destination), cost)
         Supported operations:
             - reading from file
             TODO: adding a node
@@ -43,7 +41,7 @@ class Graph:
                 in the format:
                 source, destination(, cost if weighted)
             This will generate a graph with n nodes, and add each edge both to the
-            neighbours list of the source, as well as to the list of all edges.
+            neighbours list of the source (and dest), as well as to the list of all edges.
         """
 
         file = open(filename)
@@ -96,7 +94,7 @@ class Graph:
         self.numOfNodes += 1
         self.nodes.append(GraphNode(content=content))
 
-    def add_edge(self, u, v, cost=1):
+    def add_edge(self, u, v, cost):
         self.numOfEdges += 1
         if not self.weighted:
             cost = 1

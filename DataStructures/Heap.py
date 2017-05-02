@@ -30,7 +30,7 @@ class Heap:
             Returns the final index of the element if successful
         """
         self.__arr.append(x)
-        return Heap._move_up(len(self.__arr)-1, self.__arr, key=self.key)
+        return Heap._move_up(len(self.__arr) - 1, self.__arr, key=self.key)
 
     def add_all(self, iterable):
         if len(iterable) > int(len(self.__arr) * (math.exp(len(self.__arr) - len(self.__arr)))):
@@ -53,6 +53,7 @@ class Heap:
         :param item: The updated object
         :return: The new index of the element, if successful
         """
+
         def intkey(ind):
             return self.key(self.__arr[ind])
 
@@ -68,7 +69,7 @@ class Heap:
 
         # nr_levels = math.ceil(math.log2(len(arr)+1))
         # find the parent of the last node, i.e. the last parent:
-        start_index = Heap.parent(len(arr)-1)
+        start_index = Heap.parent(len(arr) - 1)
         for n in range(start_index, -1, -1):
             Heap._sift(n, arr, key=key)
         return arr
@@ -77,16 +78,18 @@ class Heap:
     def _sift(n, arr, key=lambda arg: arg):
         def intkey(i):
             return key(arr[i])
+
         while tuple(x for x in Heap.children(n, len(arr)) if intkey(n) > intkey(x)):
             min_child = min(list(Heap.children(n, len(arr))), key=intkey)
             arr[n], arr[min_child] = arr[min_child], arr[n]
             n = min_child
         return n
-    
+
     @staticmethod
     def _move_up(n, arr, key=lambda arg: arg):
         def intkey(i):
             return key(arr[i])
+
         while Heap.parent(n) >= 0 and intkey(n) < intkey(Heap.parent(n)):
             arr[n], arr[Heap.parent(n)] = arr[Heap.parent(n)], arr[n]
             n = Heap.parent(n)
@@ -95,13 +98,13 @@ class Heap:
     @staticmethod
     def parent(n):
         if n > 0:
-            return (n-1)//2
+            return (n - 1) // 2
         else:
             return -1
 
     @staticmethod
     def children(n, l):
-        return (x for x in (2*n+1, 2*n+2) if x < l)
+        return (x for x in (2 * n + 1, 2 * n + 2) if x < l)
 
 
 def heapsort(arr, key=lambda arg: arg):
@@ -112,33 +115,3 @@ def heapsort(arr, key=lambda arg: arg):
     h = Heap(arr, key=key)
     while h:
         yield h.extract_min()
-
-
-class PriorityQueue:
-    """A queue in which items are sorted by priority.
-        Uses an underlying heap representation.
-    """
-
-    def __init__(self, arr, key=lambda arg: arg):
-        self.__heap = Heap(arr, key=key)
-
-    def get_min(self):
-        return self.__heap.get_min()
-
-    def pop(self):
-        return self.__heap.extract_min()
-
-    def push(self, x):
-        self.__heap.add(x)
-
-    def push_all(self, xs):
-        self.__heap.add_all(xs)
-
-    def updated_key(self, item):
-        self.__heap.updated(item)
-
-    def __contains__(self, item):
-        return item in self.__heap
-
-    def __bool__(self):
-        return bool(self.__heap)

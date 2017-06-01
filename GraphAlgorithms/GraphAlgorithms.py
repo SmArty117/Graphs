@@ -84,22 +84,24 @@ def kruskal(g:Graph):
     """
     Find a minimum spanning tree of an undirected graph g
     :param g: an undirected graph
-    :return: the list of edges in the MST
+    :return: A tuple: (the cost, A list of all the edges in the MST).
     """
 
     if g.directed:
         warnings.warn('The graph should be undirected!')
 
     sol = []
+    cost = 0
     es = sorted(g.edges, key=lambda e: e[1])    # sort edges by cost
     part = DataStructures.DisjointSet(g.nodes)
 
     for ((u, v), c) in es:
         if not part.same_set(u, v):
             sol.append(((u, v), c))
+            cost += c
             part.merge(u, v)
 
-    return sol
+    return cost, sol
 
 
 def bellman_ford(g:Graph, s):
@@ -158,3 +160,67 @@ def johnson(g: Graph):
                                                           gg.isomorph(g, temp[v][1]))
                                       for v in temp if v is not s}
     return ans
+
+
+def prim(g:Graph):
+    """
+    Find a minimum spanning tree of an undirected graph g.
+    :param g: An undirected graph.
+    :return: A tuple: (the cost, A list of all the edges in the MST).
+    """
+    if g.directed:
+        warnings.warn('The graph should be undirected!')
+    d = dict()
+    pred = dict()
+    popped = dict()
+    for node in g.nodes:
+        d[node] = math.inf
+        pred[node] = None
+        popped[node] = False
+    s = g.nodes[0]
+    d[s] = 0
+
+    q = DataStructures.PriorityQueue([], key=lambda x: d[x])
+    q.push(s)
+    while q:
+        u = q.pop()
+        popped[u] = True
+
+        for (v, c) in u.neighbours:
+            if not popped[v] and c < d[v]:
+                d[v] = c
+                pred[v] = u
+                if v in q:
+                    q.updated_key(v)
+                else:
+                    q.push(v)
+
+    sol = []
+    costs = dict(g.edges)
+    cost = 0
+    for v in pred:
+        if pred[v] is not None:
+            if (pred[v], v) in costs:
+                sol.append(((pred[v], v), costs[(pred[v], v)]))
+                cost += costs[(pred[v], v)]
+            else:
+                sol.append(((v, pred[v]), costs[v, pred[v]]))
+                cost += costs[(v, pred[v])]
+    return cost, sol
+
+def floyd_warshall(g:Graph):
+    """
+    Create a transitive closure of the graph, i.e. whether each node is reachable from
+    any other node.
+    :param g: A graph.
+    :return: A n x n matrix where the [i][j] element says whether i is reachable from j
+    """
+    adj = g.adjacency
+    n = g.numOfNodes
+    sol = adj
+
+    for k in range(n):
+        for i in range(n):
+            for j in range(n):
+                sol[i][j] = sol[i][j] or (sol[i][k] and sol[k][j])
+    return sol

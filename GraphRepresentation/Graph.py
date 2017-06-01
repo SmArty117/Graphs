@@ -110,11 +110,40 @@ class Graph:
         if not self.directed:
             v.neighbours.append((u, cost))
 
+    def make_undirected(self):
+        """
+        Make a directed graph into an undirected one by inversing
+        the one-directional edges.
+        :return: Itself. The graph is modified in place.
+        """
+        for ((u, v), c) in self.edges:
+            v.neighbours.append((u, c))
+        self.directed = False
+        return self
+
     def isomorph(self, g, node):
+        """
+        This is a tricky and unethical one. Basically, return the corresponding node
+        from another graph. I.e. if the k-th node from this graph is passed to this function,
+        it will return the k-th node from another graph.
+        :param g: The graph into which to morph.
+        :param node: A node from the current ('this') graph.
+        :return: The same order node, from the graph g.
+        """
         if node is None:
             return None
         respective_number = self.nodes.index(node)
         return g.nodes[respective_number]
+
+    @property
+    def adjacency(self):
+        adj = [[0 for x in range(self.numOfNodes)] for y in range(self.numOfNodes)]
+        b = self.nodes[0].id
+        for ((u, v), c) in self.edges:
+            adj[u.id-b][v.id-b] = c
+            if not self.directed:
+                adj[v.id-b][u.id-b] = c
+        return adj
 
     def __copy__(self):
         """
@@ -130,13 +159,7 @@ class Graph:
         return copy
 
     def __str__(self):
-        adj = [[0 for x in range(self.numOfNodes)] for y in range(self.numOfNodes)]
-        b = self.nodes[0].id
-        for ((u, v), c) in self.edges:
-            adj[u.id-b][v.id-b] = c
-            if not self.directed:
-                adj[v.id-b][u.id-b] = c
-
+        adj = self.adjacency
         s = ""
         for row in adj:
             for c in row:
@@ -144,4 +167,3 @@ class Graph:
             s += "\n"
 
         return s
-

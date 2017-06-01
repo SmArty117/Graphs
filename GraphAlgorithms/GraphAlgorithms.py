@@ -1,7 +1,10 @@
 import queue
 import math
 import warnings
+import copy
+
 import DataStructures
+from GraphRepresentation import Graph
 
 
 class IncompatibleInputException(Exception):
@@ -10,7 +13,7 @@ class IncompatibleInputException(Exception):
     """
 
 
-def bfs(g, s):
+def bfs(g:Graph, s):
     """
     Run breadth-first search on a graph, ignoring edge weights (i.e. cost=1)
     :param g: the graph
@@ -35,10 +38,10 @@ def bfs(g, s):
                 v.prev = u
                 q.put(v)
 
-    return list([(v.d, v.prev) for v in g.nodes])
+    return {v: (v.d, v.prev) for v in g.nodes}
 
 
-def dijkstra(g, s):
+def dijkstra(g:Graph, s):
     """
     Find the shortest paths from a given source on a graph
     The graph having negative-weight cycles will cause
@@ -74,10 +77,10 @@ def dijkstra(g, s):
                     else:
                         q.push(v)
 
-    return list([(v.d, v.prev) for v in g.nodes])
+    return {v: (v.d, v.prev) for v in g.nodes}
 
 
-def kruskal(g):
+def kruskal(g:Graph):
     """
     Find a minimum spanning tree of an undirected graph g
     :param g: an undirected graph
@@ -93,7 +96,65 @@ def kruskal(g):
 
     for ((u, v), c) in es:
         if not part.same_set(u, v):
-            sol.append((u, v, c))
+            sol.append(((u, v), c))
             part.merge(u, v)
 
     return sol
+
+
+def bellman_ford(g:Graph, s):
+    """
+    Find the shortest paths to all nodes from a source node s in a graph.
+    :param g: A graph
+    :param s: The source node
+    :return: A dict of type {node: (distance, predecessor)}
+    """
+
+    pred = {v: None for v in g.nodes}
+    d = {v: math.inf for v in g.nodes}
+    d[s] = 0
+
+    for i in range(g.numOfNodes):
+        for ((u, v), c) in g.edges:
+            if d[v] > d[u] + c:
+                d[v] = d[u] + c
+                pred[v] = u
+
+    for ((u, v), c) in g.edges:
+        if d[v] > d[u] + c:
+            raise IncompatibleInputException('Negative weight cycle detected!')
+        else:
+            return {v: (d[v], pred[v]) for v in g.nodes}
+
+
+def johnson(g: Graph):
+    """
+    Find the shortest paths between all pairs of nodes in a graph.
+    :param g: The given graph.
+    :return: A dict of dicts of type {source: {node: (distance, predecessor)}}.
+    """
+    gg = copy.copy(g)
+
+    # add a supersource to the graph
+    s = gg.add_node('S')
+    for node in gg.nodes:
+        if node is not s:
+            gg.add_edge(s, node, 0)
+
+    # run bellman-ford, tweak the graph
+    bf = bellman_ford(gg, s)
+    d = dict()
+    for node in gg.nodes:
+        d[node] = bf[node][0]
+    for (i, ((u, v), c)) in enumerate(gg.edges):
+        gg.edges[i] = ((u, v), d[u] + c - d[v])
+
+    # run Dijkstra from each vertex
+    ans = dict()
+    for u in gg.nodes:
+        if u is not s:
+            temp = dijkstra(gg, u)
+            ans[gg.isomorph(g, u)] = {gg.isomorph(g, v): (temp[v][0] - d[u] + d[v],
+                                                          gg.isomorph(g, temp[v][1]))
+                                      for v in temp if v is not s}
+    return ans

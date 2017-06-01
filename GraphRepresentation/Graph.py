@@ -15,7 +15,7 @@ class Graph:
                   adding an edge
     """
 
-    def __init__(self, source='graphtxt.txt', weighted=True, directed=True):
+    def __init__(self, weighted=True, directed=True, **kwargs):
         self.nodes = []
         self.edges = []
         self.numOfNodes = 0
@@ -23,14 +23,16 @@ class Graph:
         self.weighted = weighted
         self.directed = directed
 
-        extension = source.split('.')[-1]
+        if 'source' in kwargs:
+            source = kwargs['source']
+            extension = source.split('.')[-1]
 
-        if extension in ['txt', 'in']:
-            self.__read_from_file(source)
-        elif extension == 'csv':
-            raise NotImplementedError('CSV reading not yet implemented.')
-        else:
-            raise CorruptedInputException('Unrecognised file format!')
+            if extension in ['txt', 'in']:
+                self.__read_from_file(source)
+            elif extension == 'csv':
+                raise NotImplementedError('CSV reading not yet implemented.')
+            else:
+                raise CorruptedInputException('Unrecognised file format!')
 
     def __read_from_file(self, filename):
         """This function reads a graph from a file.
@@ -92,11 +94,15 @@ class Graph:
 
     def add_node(self, content=None):
         self.numOfNodes += 1
-        self.nodes.append(GraphNode(content=content))
+        node = GraphNode(content=content)
+        self.nodes.append(node)
+        return node
 
-    def add_edge(self, u, v, cost):
+    def add_edge(self, u, v, *args):
         self.numOfEdges += 1
-        if not self.weighted:
+        if self.weighted and args is not None:
+            cost = args[0]
+        else:
             cost = 1
 
         self.edges.append(((u, v), cost))
@@ -104,12 +110,32 @@ class Graph:
         if not self.directed:
             v.neighbours.append((u, cost))
 
+    def isomorph(self, g, node):
+        if node is None:
+            return None
+        respective_number = self.nodes.index(node)
+        return g.nodes[respective_number]
+
+    def __copy__(self):
+        """
+        Creates a new graph with new node and edge objects
+        :return: a copy of the original graph
+        """
+        copy = Graph(weighted=self.weighted, directed=self.directed)
+        nodemap = dict()
+        for u in self.nodes:
+            nodemap[u] = copy.add_node(content=u.content)
+        for ((u, v), c) in self.edges:
+            copy.add_edge(nodemap[u], nodemap[v], c)
+        return copy
+
     def __str__(self):
         adj = [[0 for x in range(self.numOfNodes)] for y in range(self.numOfNodes)]
+        b = self.nodes[0].id
         for ((u, v), c) in self.edges:
-            adj[u.id][v.id] = c
+            adj[u.id-b][v.id-b] = c
             if not self.directed:
-                adj[v.id][u.id] = c
+                adj[v.id-b][u.id-b] = c
 
         s = ""
         for row in adj:
@@ -118,3 +144,4 @@ class Graph:
             s += "\n"
 
         return s
+

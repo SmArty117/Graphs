@@ -89,7 +89,7 @@ class Graph:
                                           + str(len(self.edges)))
 
     def __read_csv(self):
-        pass
+        raise NotImplementedError('Reading from CSV not yet available.')
         # TODO: make this
 
     def add_node(self, content=None):

@@ -1,6 +1,7 @@
+import copy
+
 import GraphAlgorithms
 from GraphRepresentation import Graph
-import copy
 
 g = Graph(source="GraphRepresentation/wgraph.txt", weighted=True, directed=True)
 

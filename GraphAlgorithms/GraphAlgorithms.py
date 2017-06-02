@@ -1,7 +1,7 @@
-import queue
-import math
-import warnings
 import copy
+import math
+import queue
+import warnings
 
 import DataStructures
 from GraphRepresentation import Graph
